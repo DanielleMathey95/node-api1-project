@@ -48,21 +48,44 @@ server.get("/api/users", (req, res) => {
 
 server.post("/api/users", (req, res) => {
   const newUser = req.body;
-  User.insert(newUser)
-    .then(users => {
-      res.status(201).json(users)
-    })
-    .catch(error => {
-      res.status(500).json({message: "Could not post new user", error: error.message})
-    })
+  if (!newUser.name || !newUser.bio) {
+    res.status(422).json("Name and Bio are required");
+  } else {
+    User.insert(newUser)
+      .then((users) => {
+        res.status(201).json(users);
+      })
+      .catch((error) => {
+        res
+          .status(500)
+          .json({ message: "Could not post new user", error: error.message });
+      });
+  }
 });
 
 // [PUT] api/users/:id (U of CRUD, update user with :id using JSON payload)
+server.put("/api/users/:id", async (req, res) => {
+  const { id } = req.params;
+  const changes = req.body;
 
+  try {
+    if (!changes.name || !changes.bio) {
+      res.status(422).json("Name and Bio required");
+    } else {
+      const updatedUser = await User.update(id, changes);
+      if (!updatedUser) {
+        res.status(422).json("User does not exist");
+      } else {
+        res.status(201).json(updatedUser);
+      }
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Could not update user", error: error.message });
+  }
+});
 // [DELETE] api/users/:id (D of CRUD, remove user with :id)
-
-
-
 
 server.use("*", (req, res) => {
   res.status(404).json({ message: "Could not access" });
