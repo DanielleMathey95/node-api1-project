@@ -85,8 +85,22 @@ server.put("/api/users/:id", async (req, res) => {
       .json({ message: "Could not update user", error: error.message });
   }
 });
-// [DELETE] api/users/:id (D of CRUD, remove user with :id)
 
+// [DELETE] api/users/:id (D of CRUD, remove user with :id)
+server.delete("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const removeUser = await User.remove(id);
+    res.status(201).json(removeUser);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Could not delete user", error: error.message });
+  }
+});
+
+
+//CATCH ALL 
 server.use("*", (req, res) => {
   res.status(404).json({ message: "Could not access" });
 });
